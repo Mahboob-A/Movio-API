@@ -11,6 +11,7 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "movio_api_service.settings")
+# TODO: Change settings to .production in prod environment
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "movio_api_service.settings.dev")
 
 application = get_wsgi_application()

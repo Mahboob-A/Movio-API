@@ -15,8 +15,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.conf import settings
+
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path(f"{settings.ADMIN_URL}", admin.site.urls),
+    
+    # API for Common app - Healthcheck 
+    path("api/v1/common/", include("core_apps.common.urls")),
+    
+    # API of Upload Video Events 
+    path("api/v1/app/events/", include("core_apps.event_manager.urls")), 
+    
+    # API of Stream Video
+    path("api/v1/app/stream/", include("core_apps.stream.urls")), 
+
+    
 ]
