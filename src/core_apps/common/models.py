@@ -3,7 +3,7 @@ from django.db import models
 import uuid
 
 
-class TimeStampModel(models.Model):
+class IDTimeStampModel(models.Model):
     """Default abstract model for id and time"""
 
     pkid = models.BigAutoField(primary_key=True, editable=False)
