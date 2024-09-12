@@ -22,6 +22,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
+############################ ADDED SETTINGS ###############################
+
 # ######################### CELERY CONFIG
 
 CELERY_BROKER_URL = env("CELERY_BROKER_URL")
@@ -41,8 +43,6 @@ if USE_TZ:
 
 # FILE_UPLOAD_STORAGE = env("FILE_UPLOAD_STORAGE", default="LOCAL") # local and S3
 
-
-
 AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
@@ -57,12 +57,45 @@ AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
 ########################################################
 
+# ########################## Static and Media
+
+STATIC_URL = "/static/"
+STATIC_ROOT = str(BASE_DIR / "staticfiles")
+MEDIA_URL = "/media/"
+MEDIA_ROOT = str(BASE_DIR / "mediafiles")
+
 # ########################## S3 Bucket Settings
 
 TEMP_LOCAL_VIDEO_DIR_ROOT = str(BASE_DIR / "movio-local-video-files")
 TEMP_LOCAL_VIDEO_DIR = f"{TEMP_LOCAL_VIDEO_DIR_ROOT}/tmp-movio-videos"
 
 MOVIO_S3_VIDEO_ROOT = "movio-temp-videos"
+
+
+# ########################## ######################### Other APP Constraints
+
+# ########################## Admin URL
+
+ADMIN_URL = env("ADMIN_URL")
+
+# ########################## JWT Signing Key to Verify the JWT Token
+
+JWT_SIGNING_KEY = env("JWT_SIGNING_KEY")
+
+
+# ##################### Networking
+
+DJANGO_APP_PORT = env("DJANGO_APP_PORT")
+
+# ##################### Max Video File Size and VIdeo FIle Formats 
+
+MAX_VIDEO_FILE_SIZE = 100 * 1024 * 1024  # 100MB
+
+ALLOWED_VIDEO_FILE_FORMATS = [
+    "video/mp4",
+    "video/mov",
+]
+
 
 # ########################## Logging
 

@@ -22,6 +22,9 @@ docker-restart-movio:
 docker-restart-movio-nginx:
 	docker compose -p movio_api_service -f dev.yml restart nginx
 
+docker-restart-worker:
+	docker compose -p movio_api_service -f dev.yml restart  movio-celery-worker
+
 docker-exec-movio: 
 	docker compose -p movio_api_service -f dev.yml exec movio-api /bin/bash 
 

@@ -4,5 +4,9 @@ set -o errexit
 
 set -o nounset 
 
-exec celery -A movio_api_service.celery worker -l INFO
- 
+# prefork 
+# exec celery -A movio_api_service.celery worker -l INFO
+
+# using gevent, as genevt is better for I/O bound tasks such as network calls. 
+exec celery -A movio_api_service.celery worker -l INFO --concurrency=500 --pool=gevent
+

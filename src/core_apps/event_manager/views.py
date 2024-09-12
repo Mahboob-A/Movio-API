@@ -14,10 +14,16 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError as DRF_ValidationError
 
+from celery import chain 
+
 from core_apps.event_manager.utils import save_video_local_storage
 from core_apps.event_manager.models import VideoMetaData
 from core_apps.event_manager.serializers import VideoMetaDataSerializer
-from core_apps.event_manager.tasks import upload_video_to_s3
+from core_apps.event_manager.tasks import (
+    upload_video_to_s3,
+    delete_local_video_file_after_s3_upload,
+)
+from core_apps.event_manager.utils import validate_video_file 
 
 
 logger = logging.getLogger(__name__)
@@ -34,7 +40,16 @@ class VideoUploadAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Locaal save 
+        is_valid, message = validate_video_file(video_file_size=video_file.size, video_file_format=video_file.content_type)
+        if not is_valid:
+            return Response(
+                {"status": "error", 
+                 "message": message
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Locaal save
         result = save_video_local_storage(request)
 
         if result["status"] is True:
@@ -55,13 +70,6 @@ class VideoUploadAPIView(APIView):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-        if video_file_extention not in [".mp4", ".mov"]:
-            return Response({
-                    "status": "error",
-                    "detail": "Invalid video file format. Only MP4 and MOV files are supported.",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
         try:
             # /movio-temp-videos/
@@ -73,10 +81,21 @@ class VideoUploadAPIView(APIView):
 
             if serializer.is_valid(raise_exception=True):
                 video_metadata = serializer.save()
-                task = upload_video_to_s3.delay(
-                        local_video_filepath= local_video_path_with_extention, 
-                        s3_file_path = s3_file_path,
-                    )
+
+                video_processing_chain = chain(
+                    upload_video_to_s3.s(
+                        local_video_path_with_extention,
+                        s3_file_path,
+                        video_metadata.id,
+                        video_file.size,
+                        video_file.content_type,
+                    ), 
+                    delete_local_video_file_after_s3_upload.s(
+                    ),
+                )
+
+                video_processing_chain.apply_async(countdown=1)
+
                 logger.info(
                     f"\n[=> Video Upload API SUCCESS]: Video Offloaed Successfully to Celery Worker."
                 )
@@ -84,7 +103,7 @@ class VideoUploadAPIView(APIView):
                             "status": "success",
                             "detail": "upload started", 
                             "video_id": video_metadata.id,
-                            "task_id": task.id, 
+                            # "task_id": task.id, 
                             "video_name_without_extention": video_filename_without_extention,
                             "video_extention": video_file_extention,
                     }, 
@@ -104,7 +123,7 @@ class VideoUploadAPIView(APIView):
                         }, 
                         status=status.HTTP_400_BAD_REQUEST
                 )
-
+        # General Error Repsonse
         return Response(
             {
                     "status": "error",
@@ -112,16 +131,3 @@ class VideoUploadAPIView(APIView):
             }, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-
-
-# def upload_video(request):
-#     if request.method == "POST":
-#         file_obj = request.FILES["video"]
-#         file_path = f"{settings.AWS_STORAGE_BUCKET_NAME}/raw-videos/{file_obj.name}"
-
-#         # Trigger the Celery task to upload the video to S3 asynchronously
-#         task = upload_video_to_s3.delay(file_obj, file_path)
-
-#         return JsonResponse(
-#             {"message": "Video upload initiated", "task_id": task.id}, status=202
-#         )

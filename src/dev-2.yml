@@ -58,9 +58,9 @@ services:
     networks: 
       - dev-movio-backend-api-network
 
-  cutetube-celery-worker:   
+  movio-celery-worker:   
     <<: *api 
-    image: cutetube-celery-image
+    image: movio-celery-image
     command: /start-celeryworker
   
 

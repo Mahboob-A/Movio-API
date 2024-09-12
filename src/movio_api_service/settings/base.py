@@ -129,24 +129,3 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-############################ ADDED SETTINGS ###############################
-
-# ########################## Static and Media 
-
-STATIC_URL = "/static/"
-STATIC_ROOT = str(BASE_DIR / "staticfiles")
-MEDIA_URL = "/media/"
-MEDIA_ROOT = str(BASE_DIR / "mediafiles")
-
-# ########################## Admin URL
-
-ADMIN_URL = env("ADMIN_URL")
-
-# ########################## JWT Signing Key to Verify the JWT Token
-
-JWT_SIGNING_KEY = env("JWT_SIGNING_KEY")
-
-
-# ##################### Networking
-
-DJANGO_APP_PORT = env("DJANGO_APP_PORT")

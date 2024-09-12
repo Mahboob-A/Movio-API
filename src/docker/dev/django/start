@@ -20,4 +20,6 @@ python /home/movio/app/manage.py collectstatic --no-input  --clear
 
 
 # the project is running on 9005 port. 
-exec /usr/local/bin/gunicorn movio_api_service.wsgi:application --bind 0.0.0.0:9005 --chdir=/home/movio/app
+# exec /usr/local/bin/gunicorn movio_api_service.wsgi:application --bind 0.0.0.0:9005 --chdir=/home/movio/app
+
+exec /home/movio/app/manage.py runserver 0.0.0.0:9005

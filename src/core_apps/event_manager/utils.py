@@ -4,7 +4,7 @@ import logging
 
 
 from django.conf import settings
-
+from celery_progress.backend import ProgressRecorder
 
 logger = logging.getLogger(__name__)
 
@@ -73,3 +73,16 @@ def save_video_local_storage(request):
             f"\n[XX Save Video Local ERROR XX]: Video save to local and segment dirs for mp4 and mov Creation Failed.\nEXCEPTION: {str(e)}"
         )
         return {"status": False, "error": str(e)}
+
+
+def validate_video_file(video_file_size, video_file_format):
+    '''Validate the max file size and the allowed video file format'''
+    
+    if video_file_size > settings.MAX_VIDEO_FILE_SIZE:
+        return False, f"Video file size exceed the maximum limit of {settings.MAX_VIDEO_FILE_SIZE / (1024 *1024)} MB" # 100 MB
+    
+    if video_file_format not in settings.ALLOWED_VIDEO_FILE_FORMATS:
+        return False, f"Invalid video file format. Only {', '.join(settings.ALLOWED_VIDEO_FILE_FORMATS)} are supported."
+    
+    return True, None
+
