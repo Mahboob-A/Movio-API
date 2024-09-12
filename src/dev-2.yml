@@ -1,0 +1,93 @@
+# 110924, Wednesday, 01.00 pm  
+# Docker Compose version v2.29.1
+# Docker version 27.1.1, build 6312585
+
+services: 
+  movio-api: &api   
+    restart: always 
+    build: 
+      context: . 
+      dockerfile: ./docker/dev/django/Dockerfile
+    image: movio-api-image
+    volumes: 
+      - dev_movio_static_volume:/home/movio/app/staticfiles   
+      - dev_movio_media_volume:/home/movio/app/mediafiles 
+      - dev_movio_local_video_volume_2:/home/movio/app/movio-local-video-files
+    env_file: 
+      - ./.envs/.dev/.django
+      - ./.envs/.dev/.postgres
+    depends_on: 
+      - postgres
+      - movio-api-redis
+    command: /start
+    networks: 
+      - dev-movio-backend-api-network
+
+  postgres: 
+    build: 
+      context: . 
+      dockerfile: ./docker/dev/postgres/Dockerfile
+    image: movio-pg-image
+    volumes: 
+      - dev_movio_postgres_data:/var/lib/postgresql/data
+      - dev_movio_postgres_data_backups:/backups
+    env_file: 
+      - ./.envs/.dev/.postgres 
+    networks: 
+      - dev-movio-backend-api-network
+
+  nginx: 
+    build: 
+      context: . 
+      dockerfile: ./docker/dev/nginx/Dockerfile
+    restart: always
+    depends_on: 
+      - movio-api 
+    volumes: 
+      - dev_movio_static_volume:/app/staticfiles
+      - dev_movio_media_volume:/app/mediafiles 
+    ports: 
+      - "8081:80"
+    networks: 
+      - dev-movio-backend-api-network
+    
+  movio-api-redis: 
+    image: redis:7-alpine
+    container_name: movio-redis-container
+    mem_limit: 80m 
+    networks: 
+      - dev-movio-backend-api-network
+
+  movio-celery-worker:   
+    <<: *api 
+    image: movio-celery-image
+    command: /start-celeryworker
+  
+
+  flower: 
+    <<: *api 
+    image: movio-flower-image
+    command: /start-flower
+    volumes: 
+      - dev_movio_flower_data:/data
+    ports: 
+      - "5555:5555"
+    
+    
+networks: 
+  dev-movio-backend-api-network:
+    external: true 
+  
+
+volumes: 
+  dev_movio_static_volume: {}
+  dev_movio_media_volume: {}
+  dev_movio_postgres_data: {}
+  dev_movio_postgres_data_backups: {}
+  dev_movio_flower_data: {}
+  dev_movio_local_video_volume_2: {}
+  # dev_movio_local_video_volume: 
+  #   external: true 
+
+
+  
