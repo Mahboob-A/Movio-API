@@ -22,6 +22,7 @@ from core_apps.event_manager.serializers import VideoMetaDataSerializer
 from core_apps.event_manager.tasks import (
     upload_video_to_s3,
     delete_local_video_file_after_s3_upload,
+    publish_s3_metadata_to_mq,
 )
 from core_apps.event_manager.utils import validate_video_file 
 
@@ -51,6 +52,7 @@ class VideoUploadAPIView(APIView):
 
         # Locaal save
         result = save_video_local_storage(request)
+        print("\n\nResut: ", result, " | , \n\n")
 
         if result["status"] is True:
             video_file_extention = result["video_file_extention"]
@@ -82,6 +84,7 @@ class VideoUploadAPIView(APIView):
             if serializer.is_valid(raise_exception=True):
                 video_metadata = serializer.save()
 
+                # Celery Pipeline
                 video_processing_chain = chain(
                     upload_video_to_s3.s(
                         local_video_path_with_extention,
@@ -89,11 +92,10 @@ class VideoUploadAPIView(APIView):
                         video_metadata.id,
                         video_file.size,
                         video_file.content_type,
-                    ), 
-                    delete_local_video_file_after_s3_upload.s(
                     ),
+                    delete_local_video_file_after_s3_upload.s(),
+                    publish_s3_metadata_to_mq.s(), 
                 )
-
                 video_processing_chain.apply_async(countdown=1)
 
                 logger.info(
@@ -103,7 +105,6 @@ class VideoUploadAPIView(APIView):
                             "status": "success",
                             "detail": "upload started", 
                             "video_id": video_metadata.id,
-                            # "task_id": task.id, 
                             "video_name_without_extention": video_filename_without_extention,
                             "video_extention": video_file_extention,
                     }, 
@@ -111,7 +112,7 @@ class VideoUploadAPIView(APIView):
                 )
         except (Django_ValidationError, DRF_ValidationError) as e:
             error_dict = e.detail 
-            logger.error(f"\n[XX Video Upload API ERROR XX]: Something Unexpected Happened.\nException: {str(e)}")
+            logger.error(f"\n[XX Video Upload API ERROR XX]: Data Validation Error.\nException: {str(e)}")
             for key, value in error_dict.items():
                 if key == "duration":
                     error_message = value[0]
@@ -124,6 +125,9 @@ class VideoUploadAPIView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                 )
         # General Error Repsonse
+        logger.error(
+            f"\n[XX Video Upload API ERROR XX]: Something Unexpected Happened.\nException: {str(e)}"
+        )
         return Response(
             {
                     "status": "error",

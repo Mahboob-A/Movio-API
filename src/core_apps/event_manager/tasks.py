@@ -1,5 +1,6 @@
 import logging
 import os
+import json
 
 # Django
 from django.conf import settings
@@ -15,6 +16,7 @@ from botocore.exceptions import ClientError
 # Locsl
 from core_apps.event_manager.models import VideoMetaData
 from core_apps.event_manager.s3_utils import get_s3_client, S3UploadProgressRecorder
+from core_apps.event_manager.producers import s3_metadata_publisher_mq
 
 
 logger = logging.getLogger(__name__)
@@ -31,20 +33,14 @@ def upload_video_to_s3(
 ):
     """Celery Task to Upload Raw Movio Videos to Process By Movio-Worker-Serivce"""
 
-    # s3_client = boto3.client(
-    #     "s3",
-    #     aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-    #     aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-    #     region_name=settings.AWS_S3_REGION_NAME,
-    # )
-    
     s3_client = get_s3_client()
-    
+
     def generate_chain_result(
         success: bool = True,
         exception: str = None,
         error_message: str = None,
         success_message: str = None,
+        s3_presigned_url: str = None,
     ):
         """To generate the chain result"""
 
@@ -53,7 +49,10 @@ def upload_video_to_s3(
             "exception": exception,
             "success_message": success_message,
             "error_message": error_message,
-            "local_video_filepath": local_video_filepath, 
+            "local_video_filepath": local_video_filepath,
+            "s3_file_path": s3_file_path,
+            "s3_presigned_url": s3_presigned_url, 
+            "video_id": video_obj.id if video_obj else None,
         }
 
     try:
@@ -62,7 +61,11 @@ def upload_video_to_s3(
         logger.error(
             f"\n\n[XX Video Upload S3 ERROR XX]: Video Meta Data with ID: {video_metadata_id} does not exist."
         )
-        return generate_chain_result(success=False, exception="DoseNotExist", error_message="video-upload-failed-video-db-entry-not-exists")
+        return generate_chain_result(
+            success=False,
+            exception="DoseNotExist",
+            error_message="video-upload-failed-video-db-entry-not-exists",
+        )
 
     def update_video_metadata_status(success=False):
         """To update the video metadata status"""
@@ -85,14 +88,24 @@ def upload_video_to_s3(
             },
             # Callback=progress_recorder,  # callabck not working: requires task_id, unknown error
         )
+
+        s3_presigned_url = s3_client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": settings.AWS_STORAGE_BUCKET_NAME, "Key": s3_file_path},
+            ExpiresIn=3600*24,   # for 24 hours validity 
+        )
+
+        print("\n\n\nPresigned URL: ", s3_presigned_url, " | \n\n\n")
+
         update_video_metadata_status(success=True)
-        
+
         logger.info(
             f"\n\n[=> Video Upload S3 SUCCESS]: Video Upload to S3 Successful: {local_video_filepath}"
         )
         return generate_chain_result(
             success=True,
             success_message=f"Video Upload to S3 Successful: {local_video_filepath}",
+            s3_presigned_url=s3_presigned_url,
         )
 
     except FileNotFoundError as e:
@@ -118,7 +131,7 @@ def upload_video_to_s3(
             raise self.retry(exc=e, countdown=retry_in)
         else:
             update_video_metadata_status(success=False)
-            
+
             return generate_chain_result(
                 success=False,
                 exception="ClientError",
@@ -155,7 +168,7 @@ def delete_local_video_file_after_s3_upload(preprocessing_result):
         preprocessing_result["local_video_delete_success_message"] = success_message
         return preprocessing_result
 
-    try:    
+    try:
         if preprocessing_result["success"] is True:
 
             os.remove(preprocessing_result["local_video_filepath"])
@@ -167,7 +180,7 @@ def delete_local_video_file_after_s3_upload(preprocessing_result):
                 success=True,
                 success_message="local-video-delete-success.",
             )
-        else: 
+        else:
             return preprocessing_result
     except FileNotFoundError as e:
         logger.warning(
@@ -189,3 +202,57 @@ def delete_local_video_file_after_s3_upload(preprocessing_result):
             exception="GeneralException",
             error_message="video-deletion-unexpected-error",
         )
+
+
+@shared_task
+def publish_s3_metadata_to_mq(preprocessing_result):
+    """
+    Publish the S3 Metadata to MQ
+    """
+
+    def generate_chain_result(
+        preprocessing_result: dict,
+        success: bool = True,
+        exception: str = None,
+        error_message: str = None,
+        success_message: str = None,
+    ):
+        """To generate the chain result"""
+
+        preprocessing_result["mq_publish_success"] = success
+        preprocessing_result["mq_publish_exception"] = exception
+        preprocessing_result["mq_publish_error_message"] = error_message
+        preprocessing_result["mq_publish_success_message"] = success_message
+        return preprocessing_result
+
+    if preprocessing_result["success"] is True:
+        s3_file_path = preprocessing_result["s3_file_path"]
+        s3_file_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com/{s3_file_path}"
+
+        s3_presigned_url = preprocessing_result["s3_presigned_url"]
+
+        mq_data = {
+            "video_id": str(preprocessing_result["video_id"]),
+            "s3_file_url": s3_file_url,
+            "s3_presigned_url": s3_presigned_url,
+        }
+
+        mq_data = json.dumps(mq_data)
+
+        # Publishing teh S3 URL na dthe Video_ID to the RabbitMQ
+        published, message = s3_metadata_publisher_mq.publish_data(s3_data=mq_data)
+        if published:
+            return generate_chain_result(
+                preprocessing_result=preprocessing_result,
+                success=True,
+                success_message=message,
+            )
+        else:
+            return generate_chain_result(
+                preprocessing_result=preprocessing_result,
+                success=False,
+                exception="MQPublishError",
+                error_message=message,
+            )
+    else:
+        return preprocessing_result

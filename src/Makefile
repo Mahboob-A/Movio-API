@@ -7,7 +7,7 @@ docker-up:
 docker-down: 
 	docker compose -p movio_api_service -f dev.yml down
 
-docker-down-movio-api: 
+docker-down-v: 
 	docker compose -p movio_api_service -f dev.yml down -v
 
 docker-logs: 
@@ -19,7 +19,7 @@ docker-logs-movio:
 docker-restart-movio: 
 	docker compose -p movio_api_service -f dev.yml restart movio-api
 
-docker-restart-movio-nginx:
+docker-restart-nginx:
 	docker compose -p movio_api_service -f dev.yml restart nginx
 
 docker-restart-worker:
@@ -28,7 +28,7 @@ docker-restart-worker:
 docker-exec-movio: 
 	docker compose -p movio_api_service -f dev.yml exec movio-api /bin/bash 
 
-docker-check-movio-pg:
+docker-check-movio:
 	docker compose -p movio_api_service -f dev.yml run --rm movio-api python manage.py check --deploy 
 
 # ## 
@@ -36,10 +36,10 @@ docker-check-movio-pg:
 
 # ### Docker Volume and Postgres Database 
 
-docker-exec-movio-pg: 
+docker-exec-pg: 
 	docker compose -p movio_api_service -f dev.yml exec postgres /bin/bash 
 
-movio-pgdb: 
+docker-pgdb: 
 	docker compose -p movio_api_service -f dev.yml exec postgres psql --username="$(POSTGRES_USER)" --dbname="$(POSTGRES_DB)" 
 
 # ## 
@@ -48,7 +48,7 @@ movio-pgdb:
 
 # ### Services logs commands 
 
-docker-logs-movio-pg: 
+docker-logs-pg: 
 	docker compose -p movio_api_service -f dev.yml logs postgres
 
 # ## 

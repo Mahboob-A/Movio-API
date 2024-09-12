@@ -13,7 +13,7 @@ services:
       - .:/home/movio/app:z
       - movio_static_volume:/home/movio/app/staticfiles   
       - movio_media_volume:/home/movio/app/mediafiles 
-      - video_volume_2:/home/movio/app/movio-local-video-files
+      - movio_video_volume:/home/movio/app/movio-local-video-files
     env_file: 
       - ./.envs/.dev/.django
       - ./.envs/.dev/.postgres
@@ -79,16 +79,15 @@ networks:
   dev-movio-backend-api-network:
     external: true 
   
-
+# TODO: Create the external volume in server 
 volumes: 
   movio_static_volume: {}
   movio_media_volume: {}
   dev_movio_postgres_data: {}
   dev_movio_postgres_data_backups: {}
   dev_movio_flower_data: {}
-  video_volume_2: {}
-  # dev_movio_local_video_volume: 
-  #   external: true 
+  movio_video_volume:
+    external: true 
 
 
   
