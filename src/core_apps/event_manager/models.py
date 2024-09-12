@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.contrib.postgres.fields import JSONField
+from django.db.models import JSONField
 
 from autoslug import AutoSlugField
 

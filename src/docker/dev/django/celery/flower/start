@@ -1,0 +1,24 @@
+#!/bin/bash 
+
+set -o errexit 
+set -o nounset
+
+# celery worker availibility  
+check_worker_ready(){
+    celery -A movio_api_service.celery inspect ping 
+}
+
+until check_worker_ready; do 
+    >&2 echo 'Waiting for Celery Workers to become available .... '
+    sleep 1 
+
+done 
+
+>&2 echo 'Celery workers are available and ready! ...'
+
+
+exec celery \
+    -A movio_api_service.celery \
+    -b "${CELERY_BROKER_URL}" \
+    flower \
+    --basic_auth="${CELERY_FLOWER_USER}:${CELERY_FLOWER_PASSWORD}"

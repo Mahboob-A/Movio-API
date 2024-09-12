@@ -26,6 +26,8 @@ env.read_env(Path(str(BASE_DIR)) / f".envs/{ENVIRONMENT_TYPE}/.django")
 env.read_env(Path(str(BASE_DIR)) / f".envs/{ENVIRONMENT_TYPE}/.postgres")
 
 
+APP_DIR = BASE_DIR / "core_apps"
+
 # Application definition
 DJANGO_APPS = [
     "django.contrib.admin",
@@ -83,17 +85,17 @@ TEMPLATES = [
 WSGI_APPLICATION = "movio_api_service.wsgi.application"
 
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
 
 # TODO: Change the environment type to .prod when deploying to production
 # TODO: Change to the production database when deploying to production
 
-# DATABASES = {"default": env.db("DATABASE_URL")}
+DATABASES = {"default": env.db("DATABASE_URL")}
 
 
 # Password validation
@@ -122,22 +124,19 @@ USE_I18N = True
 
 USE_TZ = True
 
-# SITE_ID = 1 
+# SITE_ID = 1
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 ############################ ADDED SETTINGS ###############################
 
-
-# ########################## Static and Media Settings
+# ########################## Static and Media 
 
 STATIC_URL = "/static/"
 STATIC_ROOT = str(BASE_DIR / "staticfiles")
-
 MEDIA_URL = "/media/"
 MEDIA_ROOT = str(BASE_DIR / "mediafiles")
-
 
 # ########################## Admin URL
 

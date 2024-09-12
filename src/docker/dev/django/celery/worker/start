@@ -1,0 +1,8 @@
+#!/bin/bash 
+
+set -o errexit 
+
+set -o nounset 
+
+exec celery -A movio_api_service.celery worker -l INFO
+ 
