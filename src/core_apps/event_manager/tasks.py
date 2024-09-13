@@ -94,9 +94,6 @@ def upload_video_to_s3(
             Params={"Bucket": settings.AWS_STORAGE_BUCKET_NAME, "Key": s3_file_path},
             ExpiresIn=3600*24,   # for 24 hours validity 
         )
-
-        print("\n\n\nPresigned URL: ", s3_presigned_url, " | \n\n\n")
-
         update_video_metadata_status(success=True)
 
         logger.info(
