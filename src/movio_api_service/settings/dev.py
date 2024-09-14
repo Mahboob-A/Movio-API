@@ -87,7 +87,11 @@ JWT_SIGNING_KEY = env("JWT_SIGNING_KEY")
 
 DJANGO_APP_PORT = env("DJANGO_APP_PORT")
 
-# ##################### Max Video File Size and VIdeo FIle Formats
+# ########################## ######################### API Constraints (API Versioning)
+
+# ##################### Max Video File Size VIdeo FIle Formats
+
+VIDEO_UPLOAD_API = "/api/v1/app/events/video-upload/"
 
 MAX_VIDEO_FILE_SIZE = 100 * 1024 * 1024  # 100MB
 

@@ -57,13 +57,13 @@ class S3MetaDataUploadPublisherMQ(CloudAMQPHandler):
                 body=s3_data,
             )
             logger.info(
-                f"\n\n[=> MQ S3 Metadata Publish SUCCESS]: S3 Data MQ Publish Success."
+                f"\n\n[=> MQ S3 Metadata Publish SUCCESS]: S3 Data MQ Publish Success.\n\n"
             )
             message = "s3-metadata-mq-publish-success."
             return True, message
         except Exception as e:
             logger.exception(
-                f"\n[XX MQ S3 Metadata Publish ERROR XX]: S3 Data MQ Publish Unsuccessful.\n[MQ EXCEPTION]: {str(e)}"
+                f"\n[XX MQ S3 Metadata Publish ERROR XX]: S3 Data MQ Publish Unsuccessful.\n[MQ EXCEPTION]: {str(e)}\n\n"
             )
             message = "s3-metadata-mq-publish-error"
             return False, message

@@ -86,7 +86,7 @@ COPY --chown=movio:movio . ${APP_HOME}
  
 RUN chown movio:movio ${APP_HOME} 
 
-# RUN chown -R movio:movio ${APP_HOME} && \
+# RUN chown -R movio:movio ${APP_HOME}  && \
 #         chmod -R 775 ${APP_HOME}
  
 USER movio

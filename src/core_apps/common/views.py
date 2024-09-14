@@ -15,3 +15,5 @@ class HealthCheck(APIView):
         """Healthcheck for Movio Auth Service"""
 
         return Response({"status": "OK"}, HTTP_200_OK)
+
+

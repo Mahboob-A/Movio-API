@@ -62,6 +62,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Auth middleware
+    "core_apps.common.middlewares.AuthJWTMiddleware",
+    
+    # Video Body Data Validation 
+    "core_apps.common.middlewares.VideoUploadMiddleware",
 ]
 
 ROOT_URLCONF = "movio_api_service.urls"
@@ -127,5 +132,3 @@ USE_TZ = True
 # SITE_ID = 1
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-

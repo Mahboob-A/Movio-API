@@ -62,6 +62,32 @@ class VideoMetaData(IDTimeStampModel):
         blank=True,
     )
 
+    # User centric details 
+    user_id = models.UUIDField(
+        verbose_name=_("User ID"),
+        help_text=_("User ID of the User who uploaded the video"),
+        editable=False,
+        null=True,
+        blank=True,
+    )
+
+    email = models.EmailField(
+        verbose_name=_("Email"),
+        help_text=_("Email of the User who uploaded the video"),
+        editable=False,
+        null=True,
+        blank=True,
+    )
+
+    phone_number = models.CharField(
+        verbose_name=_("Phone Number"),
+        help_text=_("Phone Number of the User who uploaded the video"),
+        editable=False,
+        null=True,
+        blank=True,
+    )
+    
+
     class Meta:
         verbose_name = _("Video Meta Data")
         verbose_name_plural = _("Videos Meta Data")
