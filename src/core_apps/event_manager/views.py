@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 class VideoUploadAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]  # Only for doc. Authentitication is enforced in middleware level. See Middlewares for more details.
 
     def process_video_for_local_storage(self, request: HttpRequest) -> Dict[str, str]:
         """Process and save video file to local storage
@@ -86,9 +86,9 @@ class VideoUploadAPIView(APIView):
 
                 # Celery Pipeline: Video Upload to S3 -> Delete Local Video File -> Publish MQ Event
                 mq_data = {
-                    "user_id" : request.payload.get("user_id"),
+                    "user_id": request.payload.get("user_id"),
                     "email": request.payload.get("user_data").get("email"),
-                } 
+                }
                 video_processing_chain_events = chain(
                     upload_video_to_s3.s(
                         local_video_path_with_extention,
@@ -172,11 +172,11 @@ class VideoUploadAPIView(APIView):
             - video_extention (str): video extention
         """
 
+        # Authentication and Request Body validations are mapped in two separate middleware. See Middlesares for more details.
+
         video_file_size = request.video_file_size
         video_file_content_type = request.video_file_content_type
-        
-        # Authentication and Request Body validations are mapped in two separate middleware. See Middlesares for more details.
-        
+
         # save video in tmp file for furthur processing
         result = self.process_video_for_local_storage(request=request)
 
@@ -187,4 +187,3 @@ class VideoUploadAPIView(APIView):
             video_file_size=video_file_size,
             video_file_content_type=video_file_content_type,
         )
-
