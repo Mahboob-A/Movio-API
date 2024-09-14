@@ -6,3 +6,8 @@ venv/
 htmlcov/
 install.txt
 install.txt/
+
+**/*.pyc
+**/__pycache__
+**/migrations/*.py
+!**/migrations/__init__.py

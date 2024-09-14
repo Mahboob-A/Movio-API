@@ -175,6 +175,8 @@ class VideoUploadAPIView(APIView):
         video_file_size = request.video_file_size
         video_file_content_type = request.video_file_content_type
         
+        # Authentication and Request Body validations are mapped in two separate middleware. See Middlesares for more details.
+        
         # save video in tmp file for furthur processing
         result = self.process_video_for_local_storage(request=request)
 
@@ -186,7 +188,3 @@ class VideoUploadAPIView(APIView):
             video_file_content_type=video_file_content_type,
         )
 
-        # payload = request.payload
-        # print("\npayload: ", payload)
-
-        # return Response({"status": "ok"})
