@@ -30,7 +30,7 @@ def save_video_local_storage(request):
         video_file_extention = os.path.splitext(raw_video_file.name)[1]  
 
         video_filename_without_extention = f"{uuid.uuid4()}__{video_file_basename}"  
-        
+
         # BASE_DIR/movio-local-video-files/tmp-movio-videos/
         if not os.path.exists(settings.TEMP_LOCAL_VIDEO_DIR):
             os.mkdir(settings.TEMP_LOCAL_VIDEO_DIR)
@@ -49,11 +49,24 @@ def save_video_local_storage(request):
             for chunk in raw_video_file.chunks():
                 video_file_destination.write(chunk)
 
+        """ Example Payload (added from middleware):
+        {'token_type': 'access', 'exp': 1728897938, 'iat': 1726305938, 'jti': '2fa683f424ea4e219b5dc8c28d542e82', 
+        'user_id': '440bb3d2-8482-4924-b55e-983904dff20f', 
+        'user_data': {'first_name': 'Mahboob', 'last_name': 'Alam', 'username': 'i_yurious_3', 'email': 'iammahboob.a.3@gmail.com', 'phone_number': None}}
+        """
+        
+        # To save in db 
+        user_id = request.payload.get("user_id")
+        user_data = request.payload.get("user_data")
+
         db_data = {
             "custom_video_title": video_filename_without_extention, 
             "title": title,
             "description": description,
             "duration": duration,
+            "user_id": user_id,
+            "email": user_data.get("email"),
+            "phone_number": user_data.get("phone_number"),
         }
 
         logger.info(
@@ -85,4 +98,3 @@ def validate_video_file(video_file_size, video_file_format):
         return False, f"Invalid video file format. Only {', '.join(settings.ALLOWED_VIDEO_FILE_FORMATS)} are supported."
     
     return True, None
-

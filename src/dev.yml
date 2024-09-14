@@ -11,6 +11,10 @@ services:
     image: movio-api-image
     volumes: 
       - .:/home/movio/app:z
+      - movio_event_manager_migrations:/home/movio/app/core_apps/event_manager/migrations  # to mitigate user permission issue 
+      - movio_common_migrations:/home/movio/app/core_apps/common/migrations
+      - movio_stream_migrations:/home/movio/app/core_apps/stream/migrations
+
       - movio_static_volume:/home/movio/app/staticfiles   
       - movio_media_volume:/home/movio/app/mediafiles 
       - movio_video_volume:/home/movio/app/movio-local-video-files
@@ -23,6 +27,7 @@ services:
     command: /start
     networks: 
       - dev-movio-backend-api-network
+    # user: movio 
 
   postgres: 
     build: 
@@ -83,6 +88,10 @@ networks:
 volumes: 
   movio_static_volume: {}
   movio_media_volume: {}
+  movio_event_manager_migrations: {}
+  movio_common_migrations: {}
+  movio_stream_migrations: {}
+
   dev_movio_postgres_data: {}
   dev_movio_postgres_data_backups: {}
   dev_movio_flower_data: {}

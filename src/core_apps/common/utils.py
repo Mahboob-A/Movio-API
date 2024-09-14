@@ -29,7 +29,7 @@ def get_current_host(request) -> str:
 
 def generate_full_url(request, user_instance) -> str:
     """Returns the full instance url of user instance"""
-    
+
     host = get_current_host(request=request)
     instance_url = user_instance.get_absolute_url()
     return host + instance_url

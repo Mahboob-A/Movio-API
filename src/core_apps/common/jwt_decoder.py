@@ -1,4 +1,3 @@
-
 import logging
 import jwt
 
@@ -30,41 +29,46 @@ class DecodeJWT:
 
     def decode_jwt(self, request) -> dict:
         """Decodes a JWT token and returns the payload as a dictionary.
-        
         Args:
                 token: The JWT token string.
-                
         Return:
-                A dictionary containing the decoded payload or None if decoding fails.
+                A dictionary containing the decoded payload or None, detail and message if decoding fails.
         """
         try:
-            token = self.get_token(request=request)
 
+            token = self.get_token(request=request)
             if token is None:
-                logger.error(
-                    f"\n[JWT ERROR]: Token is missing or malformed Authorization header."
+                return (
+                    None,
+                    "jwt-header-malformed",
+                    "The JWT Authorization Header is missing or header is malformed.",
                 )
-                return None, "jwt-header-malformed"
-            
+
             jwt_signing_key = settings.JWT_SIGNING_KEY
             payload = jwt.decode(jwt=token, key=jwt_signing_key, algorithms=["HS256"])
-            message = "jwt-decode-success"
+
+            detail = "jwt-decode-success"
+            message = "JWT Token is valid."
+
             return (
                 payload,
+                detail,
                 message,
             )  # payload has additional user details. see Auth Service's CustomTokenObtainPairSerializer
         except ExpiredSignatureError as e:
-            logger.error(
-                f"\n[JWT ERROR]: JWT signature is Expired.\n[EXCEPTION]: {str(e)}"
+            return (
+                None,
+                "jwt-signature-expired",
+                "The JWT Signature is expired. Renew the JWT Token.",
             )
-            return None, "jwt-signature-expired"
         except (DecodeError, InvalidSignatureError, InvalidTokenError) as e:
-            logger.error(
-                f"\n[JWT ERROR]: JWT signature verification failed.\n[EXCEPTION]: {str(e)}"
-            )
-            return None, "jwt-decode-error"
+            return (None, "jwt-decode-error", "The JWT Token could not be verified")
         except Exception as e:
-            return None, "jwt-general-exception"
+            return (
+                None,
+                "jwt-general-exception",
+                "Some error occurred during decoding the JWT token.",
+            )
 
 
 jwt_decoder = DecodeJWT()

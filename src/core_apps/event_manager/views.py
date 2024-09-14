@@ -1,6 +1,6 @@
 import logging
 import json
-from typing import Dict, List, Tuple, Union, Any, Set # noqa
+from typing import Dict, List, Tuple, Union, Any, Set  # noqa
 from uuid import UUID
 
 from django.http import HttpRequest
@@ -32,69 +32,13 @@ logger = logging.getLogger(__name__)
 
 
 class VideoUploadAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def process_jwt_error_response(self, message: str) -> Response:
-        '''JWT Error Response'''
-
-        if message == "jwt-header-malformed":
-            return Response(
-                {
-                    "detail": "The JWT Authorization Header is missing or header is malformed."
-                },
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        if message == "jwt-decode-error":
-            return Response(
-                {"detail": "The JWT Token could not be verified"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        if message == "jwt-signature-expired":
-            return Response(
-                {"detail": "The JWT Signature is expired. Renew the JWT Token"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        if message == "jwt-general-exception":
-            return Response(
-                {"detail": "Some error occurred during decoding the JWT token."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-    def process_request(self, request: HttpRequest) -> Tuple[int, str]:
-        """General Request Body Data Processing
-        
-            Returns: 
-                - Video File Size 
-                - Video File Format
-        """
-
-        video_file = request.FILES.get("video")
-        if not video_file:
-            return Response(
-                {"status": "error", "message": "No video file provided"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        is_valid, message = validate_video_file(
-            video_file_size=video_file.size, video_file_format=video_file.content_type
-        )
-
-        if not is_valid:
-            return Response(
-                {"status": "error", "message": message},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        return video_file.size, video_file.content_type
+    permission_classes = [AllowAny]
 
     def process_video_for_local_storage(self, request: HttpRequest) -> Dict[str, str]:
         """Process and save video file to local storage
 
-            Returns: 
-                - result (dict): result of the video file save operation
+        Returns:
+            - result (dict): result of the video file save operation
         """
 
         # Locaal save
@@ -110,16 +54,23 @@ class VideoUploadAPIView(APIView):
             )
         return result
 
-    def create_video_event_and_response(self, result: HttpRequest, video_file_size: int, video_file_content_type: str) -> Response:
-        """Create video event
-        
-            Create db entry, and MQ event to be processed by Movio-Worker-Service
+    def create_video_event_and_response(
+        self,
+        request: HttpRequest,
+        result: Dict[str, str],
+        video_file_size: int,
+        video_file_content_type: str,
+    ) -> Response:
+        """Create video event and response
+        Create db entry, and MQ event to be processed by Movio-Worker-Service
         """
 
         video_file_extention = result["video_file_extention"]
         video_filename_without_extention = result["video_filename_without_extention"]
         local_video_path_with_extention = result["local_video_path_with_extention"]
-        local_video_path_without_extention = result["local_video_path_without_extention"]
+        local_video_path_without_extention = result[
+            "local_video_path_without_extention"
+        ]
         db_data = result["db_data"]
 
         try:
@@ -134,16 +85,20 @@ class VideoUploadAPIView(APIView):
                 video_metadata = serializer.save()
 
                 # Celery Pipeline: Video Upload to S3 -> Delete Local Video File -> Publish MQ Event
+                mq_data = {
+                    "user_id" : request.payload.get("user_id"),
+                    "email": request.payload.get("user_data").get("email"),
+                } 
                 video_processing_chain_events = chain(
                     upload_video_to_s3.s(
                         local_video_path_with_extention,
                         s3_file_path,
                         video_metadata.id,
-                        video_file_size,
                         video_file_content_type,
+                        video_filename_without_extention,
                     ),
                     delete_local_video_file_after_s3_upload.s(),
-                    publish_s3_metadata_to_mq.s(),
+                    publish_s3_metadata_to_mq.s(mq_data),
                 )
                 video_processing_chain_events.apply_async(countdown=1)
 
@@ -190,42 +145,48 @@ class VideoUploadAPIView(APIView):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-    def post(self, request: HttpRequest, format=None) -> Response: 
-        ''' API to upload video file to Movio-API-Service 
-        
-        Authentication: 
+    def post(self, request: HttpRequest, format=None) -> Response:
+        """API to upload video file to Movio-API-Service
+
+        NOTE: Detailed Doc is only intended for code review purpose by external reviewers. It may be removed.
+
+        Authentication:
             - Bearer Token
-        
+
         Request Body:
             - video_file (file): video file to be uploaded
             - video_name (str): video name
             - video_duration (str): video duration in format: HH:MM:SS
             - video_description (str
-        
-        Events: 
-            - DB Enrty 
-            - Video S3 Upload 
+
+        Events:
+            - DB Enrty
+            - Video S3 Upload
             - MQ Event to be processed by Movio-Worker-Service
-        
+
         Response:
             - status (str): status of the request
             - detail (str): detail of the request
             - video_id (str): video id
             - video_name_without_extention (str): video name without extention
             - video_extention (str): video extention
-        '''
+        """
 
-        # authenticatation validation
-        payload, message = jwt_decoder.decode_jwt(request=request)
-
-        if payload is None:
-            return self.process_jwt_error_response(message=message)
-
-        # requwst body data validation
-        video_file_size, video_file_content_type =  self.process_request(request=request)
-
+        video_file_size = request.video_file_size
+        video_file_content_type = request.video_file_content_type
+        
         # save video in tmp file for furthur processing
         result = self.process_video_for_local_storage(request=request)
 
         # final db entry, (activate celery pipeline for s3 upload and mq events), and response
-        return self.create_video_event_and_response(result=result, video_file_size=video_file_size, video_file_content_type=video_file_content_type)
+        return self.create_video_event_and_response(
+            request=request,
+            result=result,
+            video_file_size=video_file_size,
+            video_file_content_type=video_file_content_type,
+        )
+
+        # payload = request.payload
+        # print("\npayload: ", payload)
+
+        # return Response({"status": "ok"})

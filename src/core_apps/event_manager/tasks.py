@@ -28,8 +28,8 @@ def upload_video_to_s3(
     local_video_filepath,
     s3_file_path,
     video_metadata_id,
-    video_file_size,
     video_file_format,
+    raw_video_file_name, 
 ):
     """Celery Task to Upload Raw Movio Videos to Process By Movio-Worker-Serivce"""
 
@@ -51,8 +51,9 @@ def upload_video_to_s3(
             "error_message": error_message,
             "local_video_filepath": local_video_filepath,
             "s3_file_path": s3_file_path,
-            "s3_presigned_url": s3_presigned_url, 
+            "s3_presigned_url": s3_presigned_url,
             "video_id": video_obj.id if video_obj else None,
+            "raw_video_file_name": raw_video_file_name,
         }
 
     try:
@@ -202,7 +203,7 @@ def delete_local_video_file_after_s3_upload(preprocessing_result):
 
 
 @shared_task
-def publish_s3_metadata_to_mq(preprocessing_result):
+def publish_s3_metadata_to_mq(preprocessing_result, user_data):
     """
     Publish the S3 Metadata to MQ
     """
@@ -232,8 +233,10 @@ def publish_s3_metadata_to_mq(preprocessing_result):
             "video_id": str(preprocessing_result["video_id"]),
             "s3_file_url": s3_file_url,
             "s3_presigned_url": s3_presigned_url,
+            "raw_video_file_name": preprocessing_result["raw_video_file_name"], 
+            "user_data": user_data,
         }
-
+        
         mq_data = json.dumps(mq_data)
 
         # Publishing teh S3 URL na dthe Video_ID to the RabbitMQ

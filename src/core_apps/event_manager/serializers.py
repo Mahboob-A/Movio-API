@@ -13,4 +13,7 @@ class VideoMetaDataSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "duration",
+            "user_id", 
+            "email", 
+            "phone_number", 
         ]
