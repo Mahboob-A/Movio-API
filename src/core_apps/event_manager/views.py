@@ -24,15 +24,15 @@ from core_apps.event_manager.tasks import (
     delete_local_video_file_after_s3_upload,
     publish_s3_metadata_to_mq,
 )
-from core_apps.event_manager.utils import validate_video_file
-from core_apps.common.jwt_decoder import jwt_decoder
 
 
 logger = logging.getLogger(__name__)
 
 
 class VideoUploadAPIView(APIView):
-    permission_classes = [IsAuthenticated]  # Only for doc. Authentitication is enforced in middleware level. See Middlewares for more details.
+    permission_classes = [
+        AllowAny
+    ]  #  Authentitication is enforced in middleware level. See Middlewares for more details.
 
     def process_video_for_local_storage(self, request: HttpRequest) -> Dict[str, str]:
         """Process and save video file to local storage
@@ -77,7 +77,7 @@ class VideoUploadAPIView(APIView):
             # /movio-temp-videos/
             video_file_extention_without_dot = video_file_extention.split(".")[1]
 
-            s3_file_path = f"{settings.MOVIO_S3_VIDEO_ROOT}/{video_filename_without_extention}/{video_file_extention_without_dot}"
+            s3_file_key = f"{settings.MOVIO_S3_VIDEO_ROOT}/{video_filename_without_extention}/{video_file_extention_without_dot}"
 
             serializer = VideoMetaDataSerializer(data=db_data)
 
@@ -92,7 +92,7 @@ class VideoUploadAPIView(APIView):
                 video_processing_chain_events = chain(
                     upload_video_to_s3.s(
                         local_video_path_with_extention,
-                        s3_file_path,
+                        s3_file_key,
                         video_metadata.id,
                         video_file_content_type,
                         video_filename_without_extention,
@@ -176,6 +176,8 @@ class VideoUploadAPIView(APIView):
 
         video_file_size = request.video_file_size
         video_file_content_type = request.video_file_content_type
+
+        print("content type: ", video_file_content_type)
 
         # save video in tmp file for furthur processing
         result = self.process_video_for_local_storage(request=request)

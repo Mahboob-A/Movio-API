@@ -45,8 +45,6 @@ class VideoUploadMiddleware:
             request.method == "POST" and request.path == settings.VIDEO_UPLOAD_API
         ):  # /api/v1/app/events/video-upload/
 
-            print("\n\nEntering VideoUploadMiddleware: ", str(request))
-
             video_file = request.FILES.get("video")
 
             if video_file is None:
