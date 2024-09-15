@@ -26,10 +26,10 @@ logger = logging.getLogger(__name__)
 def upload_video_to_s3(
     self,
     local_video_filepath,
-    s3_file_path,
+    s3_file_key,
     video_metadata_id,
     video_file_format,
-    raw_video_file_name, 
+    raw_video_file_name,
 ):
     """Celery Task to Upload Raw Movio Videos to Process By Movio-Worker-Serivce"""
 
@@ -50,7 +50,7 @@ def upload_video_to_s3(
             "success_message": success_message,
             "error_message": error_message,
             "local_video_filepath": local_video_filepath,
-            "s3_file_path": s3_file_path,
+            "s3_file_key": s3_file_key,
             "s3_presigned_url": s3_presigned_url,
             "video_id": video_obj.id if video_obj else None,
             "raw_video_file_name": raw_video_file_name,
@@ -79,11 +79,12 @@ def upload_video_to_s3(
     # callback function to record the progress of the upload
     # progress_recorder = S3UploadProgressRecorder(filepath=local_video_filepath, task=self)
 
+    
     try:
         s3_client.upload_file(
             Filename=local_video_filepath,
             Bucket=settings.AWS_STORAGE_BUCKET_NAME,
-            Key=s3_file_path,
+            Key=s3_file_key,
             ExtraArgs={
                 "ContentType": f"{video_file_format}",
             },
@@ -92,8 +93,8 @@ def upload_video_to_s3(
 
         s3_presigned_url = s3_client.generate_presigned_url(
             "get_object",
-            Params={"Bucket": settings.AWS_STORAGE_BUCKET_NAME, "Key": s3_file_path},
-            ExpiresIn=3600*24,   # for 24 hours validity 
+            Params={"Bucket": settings.AWS_STORAGE_BUCKET_NAME, "Key": s3_file_key},
+            ExpiresIn=3600 * 24,  # for 24 hours validity
         )
         update_video_metadata_status(success=True)
 
@@ -224,19 +225,20 @@ def publish_s3_metadata_to_mq(preprocessing_result, user_data):
         return preprocessing_result
 
     if preprocessing_result["success"] is True:
-        s3_file_path = preprocessing_result["s3_file_path"]
-        s3_file_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com/{s3_file_path}"
+        s3_file_key = preprocessing_result["s3_file_key"]
+        s3_file_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com/{s3_file_key}"
 
         s3_presigned_url = preprocessing_result["s3_presigned_url"]
 
         mq_data = {
             "video_id": str(preprocessing_result["video_id"]),
-            "s3_file_url": s3_file_url,
-            "s3_presigned_url": s3_presigned_url,
+            "s3_file_key": s3_file_key, # the s3 file key is the s3 file name 
+            "s3_file_url": s3_file_url, # the open url 
+            "s3_presigned_url": s3_presigned_url,   
             "raw_video_file_name": preprocessing_result["raw_video_file_name"], 
             "user_data": user_data,
         }
-        
+
         mq_data = json.dumps(mq_data)
 
         # Publishing teh S3 URL na dthe Video_ID to the RabbitMQ
