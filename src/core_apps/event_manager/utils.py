@@ -30,6 +30,7 @@ def save_video_local_storage(request):
         video_file_extention = os.path.splitext(raw_video_file.name)[1]  
 
         video_filename_without_extention = f"{uuid.uuid4()}__{video_file_basename}"  
+        video_filename_with_extention = f"{video_filename_without_extention}{video_file_extention}"
 
         # BASE_DIR/movio-local-video-files/tmp-movio-videos/
         if not os.path.exists(settings.TEMP_LOCAL_VIDEO_DIR):
@@ -54,8 +55,8 @@ def save_video_local_storage(request):
         'user_id': '440bb3d2-8482-4924-b55e-983904dff20f', 
         'user_data': {'first_name': 'Mahboob', 'last_name': 'Alam', 'username': 'i_yurious_3', 'email': 'iammahboob.a.3@gmail.com', 'phone_number': None}}
         """
-        
-        # To save in db 
+
+        # To save in db
         user_id = request.payload.get("user_id")
         user_data = request.payload.get("user_data")
 
@@ -76,6 +77,7 @@ def save_video_local_storage(request):
         return {
             "status": True,
             "video_file_extention": video_file_extention,
+            "video_filename_with_extention": video_filename_with_extention, 
             "video_filename_without_extention": video_filename_without_extention,
             "local_video_path_with_extention": local_video_path_with_extention,
             "local_video_path_without_extention": local_video_path_without_extention,
