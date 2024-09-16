@@ -67,6 +67,7 @@ class VideoUploadAPIView(APIView):
 
         video_file_extention = result["video_file_extention"]
         video_filename_without_extention = result["video_filename_without_extention"]
+        video_filename_with_extention = result["video_filename_with_extention"]
         local_video_path_with_extention = result["local_video_path_with_extention"]
         local_video_path_without_extention = result[
             "local_video_path_without_extention"
@@ -77,7 +78,7 @@ class VideoUploadAPIView(APIView):
             # /movio-temp-videos/
             video_file_extention_without_dot = video_file_extention.split(".")[1]
 
-            s3_file_key = f"{settings.MOVIO_S3_VIDEO_ROOT}/{video_filename_without_extention}/{video_file_extention_without_dot}"
+            s3_file_key = f"{settings.MOVIO_S3_VIDEO_ROOT}/{video_filename_without_extention}/{video_file_extention_without_dot}/{video_filename_with_extention}"
 
             serializer = VideoMetaDataSerializer(data=db_data)
 
@@ -95,7 +96,7 @@ class VideoUploadAPIView(APIView):
                         s3_file_key,
                         video_metadata.id,
                         video_file_content_type,
-                        video_filename_without_extention,
+                        video_filename_with_extention,
                     ),
                     delete_local_video_file_after_s3_upload.s(),
                     publish_s3_metadata_to_mq.s(mq_data),

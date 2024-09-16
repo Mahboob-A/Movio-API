@@ -29,7 +29,7 @@ def upload_video_to_s3(
     s3_file_key,
     video_metadata_id,
     video_file_format,
-    raw_video_file_name,
+    video_filename_with_extention,
 ):
     """Celery Task to Upload Raw Movio Videos to Process By Movio-Worker-Serivce"""
 
@@ -53,7 +53,7 @@ def upload_video_to_s3(
             "s3_file_key": s3_file_key,
             "s3_presigned_url": s3_presigned_url,
             "video_id": video_obj.id if video_obj else None,
-            "raw_video_file_name": raw_video_file_name,
+            "video_filename_with_extention": video_filename_with_extention,
         }
 
     try:
@@ -79,7 +79,6 @@ def upload_video_to_s3(
     # callback function to record the progress of the upload
     # progress_recorder = S3UploadProgressRecorder(filepath=local_video_filepath, task=self)
 
-    
     try:
         s3_client.upload_file(
             Filename=local_video_filepath,
@@ -232,10 +231,12 @@ def publish_s3_metadata_to_mq(preprocessing_result, user_data):
 
         mq_data = {
             "video_id": str(preprocessing_result["video_id"]),
-            "s3_file_key": s3_file_key, # the s3 file key is the s3 file name 
-            "s3_file_url": s3_file_url, # the open url 
-            "s3_presigned_url": s3_presigned_url,   
-            "raw_video_file_name": preprocessing_result["raw_video_file_name"], 
+            "s3_file_key": s3_file_key,  # the s3 file key is the s3 file name
+            "s3_file_url": s3_file_url,  # the open url
+            "s3_presigned_url": s3_presigned_url,
+            "video_filename_with_extention": preprocessing_result[
+                "video_filename_with_extention"
+            ],
             "user_data": user_data,
         }
 
