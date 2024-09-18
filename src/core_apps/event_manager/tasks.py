@@ -124,7 +124,7 @@ def upload_video_to_s3(
         if self.request.retries < self.max_retries:
             retry_in = 2**self.request.retries
             logger.warning(
-                f"\n\n[## SEGMENT S3 UPLOAD WARNING ]: ClientError: The Local Video {local_video_filepath} Couldn't be Uploaded.\nRetrying in: {retry_in}."
+                f"\n\n[## VIDEO S3 UPLOAD WARNING ]: ClientError: The Local Video {local_video_filepath} Couldn't be Uploaded.\nRetrying in: {retry_in}."
             )
             raise self.retry(exc=e, countdown=retry_in)
         else:
