@@ -4,13 +4,14 @@ import traceback
 
 from django.conf import settings
 
-
+from celery import chain # noqa
 # from celery import chain, group, chord  # noqa
 
 from core_apps.event_manager.consumers import (
     video_process_result_consumer_mq,
 )
 
+from core_apps.event_manager.tasks import update_database_mq
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,9 @@ def callback(channel, method, properties, body):
 
         logger.info(f"\n\n[=> MQ Consume Started]: MQ Message Consume Started.\n")
 
-        print(f"\n\nConsumer MQ Data: {mq_consumed_data}\n")
+        mq_consume_chain = chain(update_database_mq.s(mq_consumed_data))
+
+        mq_consume_chain.apply_async()
 
         logger.info(f"\n\n[=> MQ Consume Started]: MQ Message Consume Success.\n")
 

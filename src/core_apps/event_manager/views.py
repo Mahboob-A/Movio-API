@@ -18,13 +18,12 @@ from celery import chain
 
 from core_apps.event_manager.utils import save_video_local_storage
 from core_apps.event_manager.models import VideoMetaData
-from core_apps.event_manager.serializers import VideoMetaDataSerializer
+from core_apps.event_manager.serializers import VideoMetaDataPOSTSerializer
 from core_apps.event_manager.tasks import (
     upload_video_to_s3,
     delete_local_video_file_after_s3_upload,
     publish_s3_metadata_to_mq,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +79,7 @@ class VideoUploadAPIView(APIView):
 
             s3_file_key = f"{settings.MOVIO_S3_VIDEO_ROOT}/{video_filename_without_extention}/{video_file_extention_without_dot}/{video_filename_with_extention}"
 
-            serializer = VideoMetaDataSerializer(data=db_data)
+            serializer = VideoMetaDataPOSTSerializer(data=db_data)
 
             if serializer.is_valid(raise_exception=True):
                 video_metadata = serializer.save()
@@ -173,12 +172,10 @@ class VideoUploadAPIView(APIView):
             - video_extention (str): video extention
         """
 
-        # Authentication and Request Body validations are mapped in two separate middleware. See Middlesares for more details.
+        # NOTE: Authentication and Request Body validations are mapped in two separate middleware. See Middlesares for more details.
 
         video_file_size = request.video_file_size
         video_file_content_type = request.video_file_content_type
-
-        print("content type: ", video_file_content_type)
 
         # save video in tmp file for furthur processing
         result = self.process_video_for_local_storage(request=request)
@@ -190,3 +187,5 @@ class VideoUploadAPIView(APIView):
             video_file_size=video_file_size,
             video_file_content_type=video_file_content_type,
         )
+
+

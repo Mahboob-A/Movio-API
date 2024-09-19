@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Movio Player</title>
+    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: "Nunito Sans", sans-serif;
+        background-color: #d9dfe4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .header {
+        width: 100%;
+        background-color: #16bdb4;
+        color: white;
+        padding: 10px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .header .logo {
+        font-size: 24px;
+        font-weight: bold;
+      }
+
+      .header .menu {
+        display: flex;
+        gap: 15px;
+      }
+
+      .header .menu a {
+        color: white;
+        text-decoration: none;
+        font-size: 18px;
+      }
+
+      .header .menu a:hover {
+        text-decoration: underline;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .video-container {
+        position: relative;
+        padding-bottom: 56.25%;
+        /* 16:9 aspect ratio */
+        height: 0;
+        overflow: hidden;
+      }
+
+      .video-container video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .title {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+
+      .description {
+        font-size: 14px;
+        color: #606060;
+      }
+
+      .comments-section {
+        margin-top: 30px;
+      }
+
+      .comment {
+        margin-bottom: 20px;
+      }
+
+      .comment-author {
+        font-weight: bold;
+        margin-right: 5px;
+      }
+
+      .comment-text {
+        color: #333;
+      }
+
+      .add-comment {
+        margin-top: 20px;
+      }
+
+      .add-comment textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        resize: vertical;
+      }
+
+      .add-comment button {
+        background-color: #16bdb4;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      @media (max-width: 768px) {
+        .header .logo {
+          font-size: 20px;
+        }
+
+        .header .menu a {
+          font-size: 16px;
+        }
+
+        .title {
+          font-size: 20px;
+        }
+
+        .description {
+          font-size: 12px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .header .menu {
+          flex-direction: column;
+          gap: 10px;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="header">
+      <div class="logo"><i class="fas fa-play-circle"></i> Movio Player</div>
+      <div class="menu">
+        <a href="#"><i class="fas fa-home"></i> Home</a>
+        <a href="#"><i class="fas fa-video"></i> Videos</a>
+        <a href="#"><i class="fas fa-user"></i> Profile</a>
+      </div>
+    </div>
+    <div class="container">
+      <div class="video-container">
+        <video id="videoPlayer" controls></video>
+      </div>
+      <div class="title">Popeyen The President</div>
+      <div class="description">Nostalgia Vintage Popeye Cartoon :p</div>
+      <div class="comments-section">
+        <div class="comment">
+          <span class="comment-author">Yurious:</span>
+          <span class="comment-text"
+            >I love popeye cartoon man! Thanks for sharing.</span
+          >
+        </div>
+        <div class="comment">
+          <span class="comment-author">Mehboob:</span>
+          <span class="comment-text"
+            >Very nostalgic, upload more such video!</span
+          >
+        </div>
+        <div class="comment">
+          <span class="comment-author">Angel Priya:</span>
+          <span class="comment-text"
+            >Really very good animation! Old is Gold!</span
+          >
+        </div>
+        <div class="add-comment">
+          <textarea placeholder="Add a public comment..."></textarea>
+          <button type="button">Comment</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const videoId = "43723366-b4e9-4afb-a7f1-50d102509376";
+
+        function getOS() {
+          const userAgent = window.navigator.userAgent.toLowerCase();
+          const platform = window.navigator.platform.toLowerCase();
+
+          if (userAgent.indexOf("win") > -1) return "Windows";
+          if (userAgent.indexOf("mac") > -1) return "MacOS";
+          if (userAgent.indexOf("linux") > -1) return "Linux";
+
+          return "Unknown OS";
+        }
+
+        fetch(`http://127.0.0.1:8081/api/v1/events/video-metadata/stream/${videoId}/`)
+          .then((response) => {
+            if (response.status === 429) {
+              return response.json().then((responseData) => {
+                console.log(
+                  "Rate limit exceeded. Please wait before making another request."
+                );
+                console.log(`Wait time: ${responseData.data.wait_time}`);
+              });
+            } else if (!response.ok) {
+              throw new Error("Network response was not ok.");
+            }
+            return response.json();
+          })
+          .then((responseData) => {
+            if (responseData.data.status === "success") {
+              const data = responseData.data.data;
+              const os = getOS();
+              let url;
+
+              if (os === "Windows") {
+                url = data.mp4_gcore_cdn_mpd_url;
+              } else if (os === "MacOS" || os === "Linux") {
+                url = data.mov_gcore_cdn_mpd_url;
+              } else {
+                url = data.mp4_gcore_cdn_mpd_url;
+              }
+
+              // Example CDN (Gcore) URL for MP4 container.
+              //url = `https://cdn.algocode.site/vod-media/15a2fcd3-c8dd-4519-b2c2-ce8a975f2c04__rain-bg-vid/mov/manifest.mpd`
+              console.log("CDN URL: ", url);
+              console.log("Client OS: ", os);
+
+              const player = dashjs.MediaPlayer().create();
+              player.initialize(
+                document.querySelector("#videoPlayer"),
+                url,
+                true
+              );
+
+              player.on("error", function (e) {
+                console.error("DASH player error:", e);
+              });
+
+              document.getElementById("videoTitle").textContent = data.title;
+              document.getElementById("videoDescription").textContent =
+                data.description;
+            } else {
+              console.error("Error in API response:", responseData.data.status);
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching video metadata:", error);
+          });
+      });
+    </script>
+  </body>
+</html>

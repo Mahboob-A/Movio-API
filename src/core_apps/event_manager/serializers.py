@@ -1,11 +1,11 @@
 from rest_framework import serializers
 
-from core_apps.event_manager.models import VideoMetaData
+from core_apps.event_manager.models import VideoMetaData, Subtitle
 
 
-class VideoMetaDataSerializer(serializers.ModelSerializer):
-    """Serializer for the VideoMetaData model."""
-    
+class VideoMetaDataPOSTSerializer(serializers.ModelSerializer):
+    """Serializer for the VideoMetaData model to Create an Instance."""
+
     class Meta:
         model = VideoMetaData
         fields = [
@@ -17,3 +17,5 @@ class VideoMetaDataSerializer(serializers.ModelSerializer):
             "email", 
             "phone_number", 
         ]
+
+
