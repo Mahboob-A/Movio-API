@@ -11,9 +11,9 @@ services:
     image: movio-api-image
     volumes: 
       - .:/home/movio/app:z
-      - movio_event_manager_migrations:/home/movio/app/core_apps/event_manager/migrations  # to mitigate user permission issue 
-      - movio_common_migrations:/home/movio/app/core_apps/common/migrations
-      - movio_stream_migrations:/home/movio/app/core_apps/stream/migrations
+      - movio_event_manager_migrations_volume:/home/movio/app/core_apps/event_manager/migrations  # to mitigate user permission issue 
+      - movio_common_migrations_volume:/home/movio/app/core_apps/common/migrations
+      - movio_stream_migrations_volume:/home/movio/app/core_apps/stream/migrations
 
       - movio_static_volume:/home/movio/app/staticfiles   
       - movio_media_volume:/home/movio/app/mediafiles 
@@ -24,6 +24,7 @@ services:
     depends_on: 
       - postgres
       - movio-api-redis
+      - elasticsearch
     command: /start
     networks: 
       - dev-movio-backend-api-network
@@ -35,8 +36,8 @@ services:
       dockerfile: ./docker/dev/postgres/Dockerfile
     image: movio-pg-image
     volumes: 
-      - dev_movio_postgres_data:/var/lib/postgresql/data
-      - dev_movio_postgres_data_backups:/backups
+      - dev_movio_pg_data:/var/lib/postgresql/data
+      - dev_movio_pg_data_backups:/backups
     env_file: 
       - ./.envs/.dev/.postgres 
     networks: 
@@ -77,8 +78,17 @@ services:
     volumes: 
       - dev_movio_flower_data:/data
     ports: 
-      - "5555:5555"
-    
+      - "5556:5555"
+
+  elasticsearch:
+    image: elasticsearch:7.17.24
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    networks:
+      - dev-movio-backend-api-network
+
     
 networks: 
   dev-movio-backend-api-network:
@@ -88,12 +98,12 @@ networks:
 volumes: 
   movio_static_volume: {}
   movio_media_volume: {}
-  movio_event_manager_migrations: {}
-  movio_common_migrations: {}
-  movio_stream_migrations: {}
+  movio_event_manager_migrations_volume: {}
+  movio_common_migrations_volume: {}
+  movio_stream_migrations_volume: {}
 
-  dev_movio_postgres_data: {}
-  dev_movio_postgres_data_backups: {}
+  dev_movio_pg_data: {}
+  dev_movio_pg_data_backups: {}
   dev_movio_flower_data: {}
   movio_video_volume:
     external: true 

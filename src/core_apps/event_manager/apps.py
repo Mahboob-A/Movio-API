@@ -6,3 +6,5 @@ class EventManagerConfig(AppConfig):
     name = "core_apps.event_manager"
     verbose_name = _("Event Manager")
 
+    def ready(self) -> None:
+        import core_apps.es_search.signals 

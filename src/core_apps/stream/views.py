@@ -1,15 +1,21 @@
 from uuid import UUID
 from django.http import HttpRequest
 
+from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 
-
 from core_apps.event_manager.models import VideoMetaData
-from core_apps.stream.renderers import VideoMetaDataJSONRenderer
-from core_apps.stream.serializers import VideoMetaDataGETSerializer
+from core_apps.stream.renderers import (
+    VideoMetaDataJSONRenderer,
+    VideosMetadataJSONRenderer,
+)
+from core_apps.stream.serializers import (
+    VideoMetaDataGETSerializer,
+    VideoMetaDataListAPIViewSerializer,
+)
 from core_apps.stream.paginations import VideoMetaDataPageNumberPagination # noqa 
 
 
@@ -18,7 +24,6 @@ class GetVideoMetadataAPIView(APIView):
 
     permission_classes = [AllowAny]
     renderer_classes = [VideoMetaDataJSONRenderer]
-    
 
     def get(self, request: HttpRequest, video_id: UUID, format=None) -> Response:
         try:
@@ -33,3 +38,14 @@ class GetVideoMetadataAPIView(APIView):
         return Response(
             {"status": "success", "detail": serializer.data}, status=status.HTTP_200_OK
         )
+
+
+class AllVideosListView(ListAPIView):
+    """API View to retrieeve all videos metadata"""
+
+    permission_classes = [AllowAny]
+    renderer_classes = [VideosMetadataJSONRenderer]
+    pagination_class = VideoMetaDataPageNumberPagination
+
+    queryset = VideoMetaData.objects.all()
+    serializer_class = VideoMetaDataListAPIViewSerializer

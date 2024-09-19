@@ -17,3 +17,6 @@ celery-progress==0.4
 celery==5.4.0
 gevent==24.2.1
 pybloom-live===4.0.0
+
+django-elasticsearch-dsl-drf==0.22.5
+django-elasticsearch-dsl==7.3.0

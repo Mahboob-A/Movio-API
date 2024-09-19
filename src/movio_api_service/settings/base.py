@@ -43,12 +43,15 @@ THIRD_PARTH_APPS = [
     "rest_framework",
     "drf_yasg",
     "corsheaders",
+    "django_elasticsearch_dsl", 
+    "django_elasticsearch_dsl_drf",
 ]
 
 LOCAL_APPS = [
     "core_apps.common",
     "core_apps.event_manager",
     "core_apps.stream",
+    "core_apps.es_search", 
 ]
 
 # installed apps
@@ -62,6 +65,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    
     # Auth middleware
     "core_apps.common.middlewares.AuthJWTMiddleware",
     
@@ -98,7 +102,6 @@ WSGI_APPLICATION = "movio_api_service.wsgi.application"
 # }
 
 # TODO: Change the environment type to .prod when deploying to production
-# TODO: Change to the production database when deploying to production
 
 DATABASES = {"default": env.db("DATABASE_URL")}
 

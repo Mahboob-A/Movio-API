@@ -36,10 +36,9 @@ class VideosMetadataJSONRenderer(JSONRenderer):
         else:
             status_code = renderer_context.get("response").status_code
 
-        errors = data.get("errors", None)
+        if isinstance(data, dict):
+            errors = data.get("errors", None)
+            if errors is not None:
+                return super(VideosMetadataJSONRenderer, self).render(data)
 
-        # if there are errors, then render as per default JSON style. Pass if errors is None
-        if errors is not None:
-            return super(VideosMetadataJSONRenderer, self).render(data)
-        else:
-            return json.dumps({"status_code": status_code, "videos": data})
+        return json.dumps({"status_code": status_code, "videos": data})

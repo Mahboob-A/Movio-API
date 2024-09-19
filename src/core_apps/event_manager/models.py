@@ -12,7 +12,8 @@ class VideoMetaData(IDTimeStampModel):
 
     custom_video_title = models.CharField(
         verbose_name=_("Custom Video Metadata Title (UUID__title)"), max_length=220
-    )
+    ) # uuid__videoname
+    
     title = models.CharField(verbose_name=_("Video Title"), max_length=220)
     slug = AutoSlugField(populate_from="title", always_update=True, unique=True)
 
@@ -62,7 +63,7 @@ class VideoMetaData(IDTimeStampModel):
         blank=True,
     )
 
-    # User centric details 
+    # User centric details
     user_id = models.UUIDField(
         verbose_name=_("User ID"),
         help_text=_("User ID of the User who uploaded the video"),
@@ -86,7 +87,6 @@ class VideoMetaData(IDTimeStampModel):
         null=True,
         blank=True,
     )
-    
 
     class Meta:
         verbose_name = _("Video Meta Data")
@@ -102,7 +102,7 @@ class VideoMetaData(IDTimeStampModel):
         return self.title
 
 
-class Subtitle(models.Model):
+class Subtitle(IDTimeStampModel):
     video = models.ForeignKey(
         VideoMetaData, on_delete=models.CASCADE, related_name="subtitles"
     )

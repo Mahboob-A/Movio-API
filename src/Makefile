@@ -70,3 +70,18 @@ superuser:
 	docker compose -p movio_api_service -f dev.yml run --rm movio-api python manage.py createsuperuser 
 
 # ## 
+
+
+# ### ElasticSearch Command
+es-idx-create:
+	docker compose -p movio_api_service -f dev.yml exec movio-api python manage.py search_index --create 
+
+# run after --create 
+
+es-idx-populate:
+	docker compose -p movio_api_service -f dev.yml exec movio-api python manage.py search_index --populate 
+
+# --create + --populate
+
+es-idx-rebuild:
+	docker compose -p movio_api_service -f dev.yml exec movio-api python manage.py search_index --rebuild 
