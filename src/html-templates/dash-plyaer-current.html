@@ -170,11 +170,18 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
-
-            const videoId = "6f214f93-f682-4024-b2dd-9f81f69a03a6";
+            // 00:06.00 minutes 
+            const long_video_id = "36946953-724d-413a-bd00-fdcbf13da25d";
+            const long_video_cdn_url =  "https://movio-cdn.algocode.site/segments/59ac33d5-5d3f-4ffc-82c1-77f8f40379cc__test1/manifest.mpd";
+            
+            // 00:00:30 seconds 
+            const short_video_Id = "8f61c8d6-16d1-4166-8eaf-cd51d8839ac8";
+            const short_video_cdn_url = "https://movio-cdn.algocode.site/segments/eabe15d1-95fc-40d3-80dc-52e92c43e15a__test2/manifest.mpd"
 
             // popey president video
-            url = "https://movio-cdn.algocode.site/segments/aaab9653-c84f-45f4-b94a-c6c4e7669670__test2/manifest.mpd";
+            
+            url = short_video_cdn_url;
+
             const player = dashjs.MediaPlayer().create();
             player.initialize(document.querySelector("#videoPlayer"), url, true);
 

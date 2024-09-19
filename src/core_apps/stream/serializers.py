@@ -19,11 +19,28 @@ class VideoMetaDataGETSerializer(serializers.ModelSerializer):
     class Meta:
         model = VideoMetaData
         fields = [
-            "custom_video_title",
+            "id",
             "title",
             "description",
             "duration",
+            "custom_video_title",
             "mp4_s3_mpd_url",
             "mp4_gcore_cdn_mpd_url",
             "subtitles",
+        ]
+
+
+class VideoMetaDataListAPIViewSerializer(serializers.ModelSerializer):
+    """Serializer for the VideoMetaData model to List all Videos"""
+
+    class Meta: 
+        model = VideoMetaData
+        fields = [
+            "id",
+            "title",
+            "description",
+            "duration",
+            "custom_video_title", 
+            "mp4_s3_mpd_url",
+            "mp4_gcore_cdn_mpd_url",
         ]

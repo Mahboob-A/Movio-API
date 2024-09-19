@@ -31,5 +31,7 @@ urlpatterns = [
     # API of Stream Video
     path("api/v1/app/stream/", include("core_apps.stream.urls")), 
 
+    # ES Search APIs 
+    path("api/v1/app/search/", include("core_apps.es_search.urls")),
     
 ]

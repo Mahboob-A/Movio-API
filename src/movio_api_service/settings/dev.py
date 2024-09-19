@@ -109,7 +109,9 @@ VIDEO_UPLOAD_API = "/api/v1/app/events/video-upload/"
 
 MAX_VIDEO_FILE_SIZE = 100 * 1024 * 1024  # 100MB
 
-ALLOWED_VIDEO_FILE_FORMATS = ["video/x-matroska"]  # .mkv only .mkv is supported for beta version of Movio
+ALLOWED_VIDEO_FILE_FORMATS = [
+    "video/x-matroska"
+]  # .mkv only .mkv is supported for beta version of Movio
 
 # ########################## RabbitMQ Config
 

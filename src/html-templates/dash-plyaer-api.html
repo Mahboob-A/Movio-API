@@ -206,7 +206,8 @@
     </div>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const videoId = "43723366-b4e9-4afb-a7f1-50d102509376";
+
+        const videoId = "8f61c8d6-16d1-4166-8eaf-cd51d8839ac8";
 
         function getOS() {
           const userAgent = window.navigator.userAgent.toLowerCase();
@@ -219,7 +220,7 @@
           return "Unknown OS";
         }
 
-        fetch(`http://127.0.0.1:8081/api/v1/events/video-metadata/stream/${videoId}/`)
+        fetch(`http://127.0.0.1:8081/api/v1/app/stream/video-metadata/${videoId}/`)
           .then((response) => {
             if (response.status === 429) {
               return response.json().then((responseData) => {
@@ -242,13 +243,10 @@
               if (os === "Windows") {
                 url = data.mp4_gcore_cdn_mpd_url;
               } else if (os === "MacOS" || os === "Linux") {
-                url = data.mov_gcore_cdn_mpd_url;
+                url = data.mp4_gcore_cdn_mpd_url;
               } else {
                 url = data.mp4_gcore_cdn_mpd_url;
               }
-
-              // Example CDN (Gcore) URL for MP4 container.
-              //url = `https://cdn.algocode.site/vod-media/15a2fcd3-c8dd-4519-b2c2-ce8a975f2c04__rain-bg-vid/mov/manifest.mpd`
               console.log("CDN URL: ", url);
               console.log("Client OS: ", os);
 
@@ -277,3 +275,4 @@
     </script>
   </body>
 </html>
+
