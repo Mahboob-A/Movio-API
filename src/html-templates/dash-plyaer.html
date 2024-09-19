@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movio Player</title>
+    <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: #d9dfe4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            width: 100%;
+            background-color: #16bdb4;
+            color: white;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .header .menu {
+            display: flex;
+            gap: 15px;
+        }
+        .header .menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .header .menu a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+        }
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .description {
+            font-size: 14px;
+            color: #606060;
+        }
+        .comments-section {
+            margin-top: 30px;
+        }
+        .comment {
+            margin-bottom: 20px;
+        }
+        .comment-author {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .comment-text {
+            color: #333;
+        }
+        .add-comment {
+            margin-top: 20px;
+        }
+        .add-comment textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        .add-comment button {
+            background-color: #16bdb4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            .header .logo {
+                font-size: 20px;
+            }
+            .header .menu a {
+                font-size: 16px;
+            }
+            .title {
+                font-size: 20px;
+            }
+            .description {
+                font-size: 12px;
+            }
+        }
+        @media (max-width: 480px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .header .menu {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"><i class="fas fa-play-circle"></i> Movio Player</div>
+        <div class="menu">
+            <a href="#"><i class="fas fa-home"></i> Home</a>
+            <a href="#"><i class="fas fa-video"></i> Videos</a>
+            <a href="#"><i class="fas fa-user"></i> Profile</a>
+        </div>
+    </div>
+    <div class="container">
+        <div class="video-container">
+            <video id="videoPlayer" controls></video>
+        </div>
+        <div class="title">Popeyen   The President</div>
+        <div class="description">Nostalgia Vintage Popeye Cartoon :p</div>
+        <div class="comments-section">
+            <div class="comment">
+                <span class="comment-author">Yurious:</span>
+                <span class="comment-text">I love popeye cartoon man! Thanks for sharing.</span>
+            </div>
+            <div class="comment">
+                <span class="comment-author">Mehboob:</span>
+                <span class="comment-text">Very nostalgic, upload more such video!</span>
+            </div>
+            <div class="comment">
+                <span class="comment-author">Angel Priya:</span>
+                <span class="comment-text">Really very good animation! Old is Gold!</span>
+            </div>
+            <div class="add-comment">
+                <textarea placeholder="Add a public comment..."></textarea>
+                <button type="button">Comment</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+
+            const videoId = "6f214f93-f682-4024-b2dd-9f81f69a03a6";
+
+            // popey president video
+            url = "https://movio-cdn.algocode.site/segments/aaab9653-c84f-45f4-b94a-c6c4e7669670__test2/manifest.mpd";
+            const player = dashjs.MediaPlayer().create();
+            player.initialize(document.querySelector("#videoPlayer"), url, true);
+
+            player.on("error", function (e) {
+                console.error("DASH player error:", e);
+            });
+
+            player.on("initialized", function () {
+                console.log("DASH player initialized.");
+            });
+
+            player.on("streaming:bufferingCompleted", function () {
+                console.log("Buffering completed.");
+            });
+
+            player.on("manifestLoaded", function (e) {
+                console.log("Manifest loaded.");
+                const manifest = e.manifest;
+
+                if (manifest && manifest.Periods) {
+                    manifest.Periods.forEach(period => {
+                        period.AdaptationSets.forEach(adaptationSet => {
+                            if (adaptationSet.mimeType.startsWith('text/')) {
+                                console.log("Subtitle track found:", adaptationSet);
+                                adaptationSet.Representations.forEach(rep => {
+                                    console.log("Subtitle Representation:", rep);
+                                });
+                                player.setTextDefaultLanguage(adaptationSet.lang);
+                            }
+                        });
+                    });
+                }
+            });
+
+
+        });
+    </script>
+</body>
+</html>

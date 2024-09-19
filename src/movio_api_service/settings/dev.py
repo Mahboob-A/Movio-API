@@ -55,7 +55,21 @@ AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
 # MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
 
-########################################################
+# S3 Bucket for Segments and processed subtitles: segments and subtitles directory
+AWS_MOVIO_S3_SEGMENTS_SUBTITLES_BUCKET_NAME = env(
+    "AWS_MOVIO_S3_SEGMENTS_SUBTITLES_BUCKET_NAME"
+)
+
+# Root of video segments in S3
+AWS_MOVIO_S3_SEGMENTS_BUCKET_ROOT = "segments"
+
+# Root of video subtitles in S3
+AWS_MOVIO_S3_SUBTITLES_BUCKET_ROOT = "subtitles"
+
+
+# ############################ Gcore CDN URL
+
+GCORE_CDN_URL_BASE = env("GCORE_CDN_URL_BASE")
 
 # ########################## Static and Media
 
@@ -95,7 +109,7 @@ VIDEO_UPLOAD_API = "/api/v1/app/events/video-upload/"
 
 MAX_VIDEO_FILE_SIZE = 100 * 1024 * 1024  # 100MB
 
-ALLOWED_VIDEO_FILE_FORMATS = ["video/mp4", "video/quicktime", "video/x-matroska"]  # mp4, mov, mkv
+ALLOWED_VIDEO_FILE_FORMATS = ["video/x-matroska"]  # .mkv only .mkv is supported for beta version of Movio
 
 # ########################## RabbitMQ Config
 

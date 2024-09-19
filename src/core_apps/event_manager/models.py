@@ -107,7 +107,7 @@ class Subtitle(models.Model):
         VideoMetaData, on_delete=models.CASCADE, related_name="subtitles"
     )
     language = models.CharField(max_length=6)
-    content = JSONField()  
+    content = models.TextField()
 
     def __str__(self):
         return f"{self.video.title} - {self.language}"
