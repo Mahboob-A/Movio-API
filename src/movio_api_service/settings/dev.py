@@ -149,9 +149,13 @@ MOVIO_PROCESSED_VIDEO_RESULT_ROUTING_KEY = env(
     "MOVIO_PROCESSED_VIDEO_RESULT_ROUTING_KEY"
 )
 
+# ########################## Elasticsearch Config
+
+ELASTICSEARCH_DSL = {
+    "default": {"hosts": env("ELASTICSEARCH_HOSTS")},
+}
 
 # ########################## Logging
-
 
 LOGGING = {
     "version": 1,

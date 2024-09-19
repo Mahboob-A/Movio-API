@@ -24,6 +24,7 @@ services:
     depends_on: 
       - postgres
       - movio-api-redis
+      - elasticsearch
     command: /start
     networks: 
       - dev-movio-backend-api-network
@@ -77,8 +78,17 @@ services:
     volumes: 
       - dev_movio_flower_data:/data
     ports: 
-      - "5555:5555"
-    
+      - "5556:5555"
+
+  elasticsearch:
+    image: elasticsearch:7.17.24
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    networks:
+      - dev-movio-backend-api-network
+
     
 networks: 
   dev-movio-backend-api-network:
