@@ -1,0 +1,255 @@
+{
+	"info": {
+		"_postman_id": "9c63af65-b64a-4a24-904c-c6b1ec3a5e48",
+		"name": "Movio API Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33416795"
+	},
+	"item": [
+		{
+			"name": "Event Manager",
+			"item": [
+				{
+					"name": "Submit Video",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"var responseData = pm.response.json();",
+									"",
+									"if (responseData.status === \"success\") {",
+									"    pm.environment.set(\"video_id\", responseData.video_id);",
+									"    console.log(\"Video ID captured: \" + responseData.video_id);",
+									"} else {",
+									"    console.log(\"Video upload failed or status is not success.\");",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "video",
+									"type": "file",
+									"src": "postman-cloud:///1ef73838-8522-46d0-911c-2a3977001c87"
+								},
+								{
+									"key": "title",
+									"value": "Popey President another test video",
+									"type": "text"
+								},
+								{
+									"key": "duration",
+									"value": "00:00:55",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "this is popey testing video short",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api_service_dev_docker_url}}/app/events/video-upload/",
+							"host": [
+								"{{api_service_dev_docker_url}}"
+							],
+							"path": [
+								"app",
+								"events",
+								"video-upload",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Common APP",
+			"item": [
+				{
+					"name": "Healthcheck",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_service_dev_docker_url}}/common/healthcheck/",
+							"host": [
+								"{{api_service_dev_docker_url}}"
+							],
+							"path": [
+								"common",
+								"healthcheck",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "Search Video MetaData",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_service_dev_docker_url}}/app/search/video-metadata/?search=testing",
+							"host": [
+								"{{api_service_dev_docker_url}}"
+							],
+							"path": [
+								"app",
+								"search",
+								"video-metadata",
+								""
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "testing"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search in Subtitles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_service_dev_docker_url}}/app/search/subtitle/?search=roar",
+							"host": [
+								"{{api_service_dev_docker_url}}"
+							],
+							"path": [
+								"app",
+								"search",
+								"subtitle",
+								""
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "roar"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stream Video",
+			"item": [
+				{
+					"name": "Single Video MetaData",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_service_dev_docker_url}}/app/stream/video-metadata/{{video_id}}/",
+							"host": [
+								"{{api_service_dev_docker_url}}"
+							],
+							"path": [
+								"app",
+								"stream",
+								"video-metadata",
+								"{{video_id}}",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Videos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_service_dev_docker_url}}/app/stream/videos/all/?page=1",
+							"host": [
+								"{{api_service_dev_docker_url}}"
+							],
+							"path": [
+								"app",
+								"stream",
+								"videos",
+								"all",
+								""
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI5MDExMTQ1LCJpYXQiOjE3MjY0MTkxNDUsImp0aSI6IjliNWQzMzBjNDAzZDRhNGI4M2NhMDE0M2Q0MmVmNWY3IiwidXNlcl9pZCI6ImMyOWU3ZWRjLWZkOGItNGZjYy05YWE1LTcxNGE4NWNlNzVjYiIsInVzZXJfZGF0YSI6eyJmaXJzdF9uYW1lIjoiTWFoYm9vYiIsImxhc3RfbmFtZSI6IkFsYW0iLCJ1c2VybmFtZSI6ImlfeXVyaW91cyIsImVtYWlsIjoiaWFtbWFoYm9vYi5hQGdtYWlsLmNvbSIsInBob25lX251bWJlciI6bnVsbH19.l2FgoRXIIPaQnXyed-ndozNXL3LTj2Qn7hoipL2hrM4",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "docker_url",
+			"value": "http://127.0.0.1:8080/api/v1/",
+			"type": "string",
+			"disabled": true
+		}
+	]
+}
